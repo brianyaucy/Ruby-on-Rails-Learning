@@ -5,6 +5,7 @@
 - [Authentication system - BCrypt Algorithm](#authentication-system---bcrypt-algorithm)
   - [Authentication POC](#authentication-poc)
   - [Module](#module)
+  - [include](#include)
 
 
 # OOP
@@ -252,3 +253,97 @@ users = [
 Crud.create_user_hash(users)
 puts Crud.authenticate_user("ada", "john", users)
 ```
+
+<br/>
+
+---
+
+## include
+
+`crud.rb`:
+
+```ruby
+require 'bundler/inline'
+
+gemfile true do
+ source 'http://rubygems.org'
+ gem 'bcrypt'
+end
+
+module Crud
+
+  require 'bcrypt'
+
+  def create_hash_digest(password)
+    BCrypt::Password.create(password)
+  end
+
+  def verify_hash(password)
+    BCrypt::Password.new(password)
+  end
+
+  def create_user_hash(user_list)
+    user_list.each do |user_record|
+      user_record[:password] = create_hash_digest(user_record[:password])
+    end
+    user_list
+  end
+
+  def authenticate_user(user, pass, user_list)
+    user_list.each do |user_record|
+      if user_record[:username] == user && verify_hash(user_record[:password]) == pass
+        return user_record
+      end
+    end
+    "Credentials were not correct!"
+  end
+
+end
+```
+
+<br/>
+
+`main.rb`:
+
+```ruby
+require_relative 'crud'
+
+class Student
+  include Crud
+  attr_accessor :first_name, :last_name, :email, :username, :password
+  @first_name
+  @last_name
+  @email
+  @username
+  @password
+
+  def initialize(first_name, last_name, email, username, password)
+    @first_name = first_name
+    @last_name = last_name
+    @email = email
+    @username = username
+    @password = password
+  end
+
+  def set_password(password)
+    @password = password
+  end
+
+  def print_password
+    "The password of the user account \"#{@username}\" is \"#{@password}\""
+  end
+
+  def to_s
+    "\{\"First Name\": \"#{@first_name}\", \"Last Name\": \"#{@last_name}\", \"Email\": \"#{@email}\", \"Username\": \"#{@username}\""
+  end
+end
+
+brainyou = Student.new("Brain", "You", "brain.you@localhost", "brain.you", "Password123")
+adajohn = Student.new("Ada", "John", "ada.john@localhost", "ada.john", "Password456")
+
+puts brainyou.create_hash_digest(brainyou.password)
+```
+
+<br/>
+
+---
